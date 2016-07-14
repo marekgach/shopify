@@ -19,7 +19,19 @@
 			unset($query_params['signature']);
 			unset($query_params['hmac']);
 			ksort($query_params);
-			return $hmac == hash_hmac('sha256', http_build_query($query_params), $shared_secret);
+
+			foreach($query_params as $param => $value) {
+				$param = str_replace('%', '%25', $param);
+				$param = str_replace('&', '%26', $param);
+				$param = str_replace('=', '%3D', $param);
+
+				$value = str_replace('%', '%25', $value);
+				$value = str_replace('&', '%26', $value);
+
+				$params[$param] = "{$param}={$value}";
+			}
+
+			return $hmac == hash_hmac('sha256', implode('&', $params), $shared_secret);
 		}
 		return false;
 	}
